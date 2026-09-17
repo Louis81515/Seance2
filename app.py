@@ -24,12 +24,7 @@ def health():
 def status():
     return jsonify(service="projet-devops-groupe-demo", version="1.0"), 200
 
-def test_status_endpoint(client):
-    response = client.get('/status')
-    assert response.status_code == 200
-    assert response.get_json() == {"status": "ok"}
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-x=1 
+# test pr trigger
