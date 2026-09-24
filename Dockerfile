@@ -14,7 +14,7 @@ WORKDIR /app
 
 RUN useradd --create-home appuser
 
-COPY --from=builder /root/.local /home/appuser/.local
+COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
 COPY --chown=appuser:appuser . .
 
 USER appuser
