@@ -88,13 +88,18 @@ jobs:
       - name: Make deploy script executable
         run: chmod +x deploy/deploy.sh
 
+      - name: Make deploy script executable
+        run: chmod +x deploy/deploy.sh
+
       - name: Initial run (deploy to blue)
         run: |
-          docker compose up -d redis nginx
+          docker compose up -d redis
           ./deploy/deploy.sh
+          docker compose up -d nginx
 
       - name: Verify initial deployment
         run: |
+          sleep 2
           curl -f http://localhost:8080/status
           curl -f http://localhost:8080/health
 
@@ -103,6 +108,7 @@ jobs:
 
       - name: Verify switched deployment
         run: |
+          sleep 2
           STATUS=$(curl -s http://localhost:8080/status)
           echo "Status output: $STATUS"
           echo "$STATUS" | grep -q '"deploy_color":"green"'
