@@ -6,7 +6,7 @@ STATE_FILE=".active_color"
 if [ -f "$STATE_FILE" ]; then
     CURRENT_COLOR=$(cat "$STATE_FILE")
 else
-    CURRENT_COLOR="blue"
+    CURRENT_COLOR="green"
 fi
 
 if [ "$CURRENT_COLOR" = "blue" ]; then
@@ -36,7 +36,14 @@ done
 if [ $SUCCESS -eq 1 ]; then
     echo "Smoke test valide sur $NEW_COLOR ! Reconfiguration Nginx..."
     printf "events { worker_connections 1024; }\nhttp {\n    upstream app_backend {\n        server app-%s:5000;\n    }\n    server {\n        listen 80;\n        location / {\n            proxy_pass http://app_backend;\n            proxy_set_header Host \$host;\n        }\n    }\n}\n" "$NEW_COLOR" > nginx/nginx.conf
-    docker compose exec -T nginx nginx -s reload
+    
+    # Demarrer Nginx s'il n'est pas actif, sinon recharger a chaud
+    if [ -n "$(docker compose ps -q nginx 2>/dev/null)" ] && [ "$(docker inspect -f '{{.State.Running}}' $(docker compose ps -q nginx) 2>/dev/null)" = "true" ]; then
+        docker compose exec -T nginx nginx -s reload
+    else
+        docker compose up -d nginx
+    fi
+
     echo "Arret de app-$CURRENT_COLOR..."
     docker compose stop "app-$CURRENT_COLOR"
     echo "$NEW_COLOR" > "$STATE_FILE"
