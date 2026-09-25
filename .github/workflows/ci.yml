@@ -77,7 +77,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy:
+deploy:
     needs: build-and-push
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -88,18 +88,15 @@ jobs:
       - name: Make deploy script executable
         run: chmod +x deploy/deploy.sh
 
-      - name: Make deploy script executable
-        run: chmod +x deploy/deploy.sh
+      - name: Start Redis
+        run: docker compose up -d redis
 
       - name: Initial run (deploy to blue)
-        run: |
-          docker compose up -d redis
-          ./deploy/deploy.sh
-          docker compose up -d nginx
+        run: ./deploy/deploy.sh
 
       - name: Verify initial deployment
         run: |
-          sleep 2
+          sleep 3
           curl -f http://localhost:8080/status
           curl -f http://localhost:8080/health
 
@@ -108,7 +105,7 @@ jobs:
 
       - name: Verify switched deployment
         run: |
-          sleep 2
+          sleep 3
           STATUS=$(curl -s http://localhost:8080/status)
           echo "Status output: $STATUS"
           echo "$STATUS" | grep -q '"deploy_color":"green"'
