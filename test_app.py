@@ -21,8 +21,7 @@ def test_health_endpoint_healthy():
 
 def test_health_endpoint_unhealthy():
     with patch("app.get_redis_client") as mock_client:
-        err = Exception("Connection error")
-        mock_client.return_value.ping.side_effect = err
+        mock_client.return_value.ping.side_effect = Exception("err")
         client = app.test_client()
         response = client.get("/health")
         assert response.status_code == 503
